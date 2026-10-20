@@ -1,0 +1,218 @@
+table Vendas
+	lineageTag: 53b88327-944b-4cab-9cd9-775200c0aba6
+
+	/// Soma dos valores originais e recuperados. Sem moeda definida na fonte. Nao representa lucro nem receita liquida.
+	measure Faturamento = SUM(Vendas[Valor Venda])
+		formatString: #,0.00
+		displayFolder: Indicadores
+		lineageTag: a78da819-b552-431b-9842-e2590d029357
+
+	measure Transacoes = DISTINCTCOUNT(Vendas[Transaction ID])
+		formatString: #,0
+		displayFolder: Indicadores
+		lineageTag: ebb008a2-805b-458b-9591-2b0056a76765
+
+	measure 'Transacoes com valor' = COUNT(Vendas[Valor Venda])
+		formatString: #,0
+		displayFolder: Indicadores
+		lineageTag: bf86c659-65d2-4d51-9cbc-af9b3237489a
+
+	/// Faturamento dividido somente pelas transacoes com valor conhecido, no contexto dos filtros.
+	measure 'Ticket medio' = DIVIDE([Faturamento], [Transacoes com valor])
+		formatString: #,0.00
+		displayFolder: Indicadores
+		lineageTag: 425c0721-9c52-486d-928e-0662f80111d7
+
+	/// Soma de quantidades originais e recuperaveis. Nao inclui quantidades desconhecidas.
+	measure Unidades = SUM(Vendas[Quantidade Analise])
+		formatString: #,0.##
+		displayFolder: Indicadores
+		lineageTag: 16ff2fe1-6863-4ef8-842c-f1699d294768
+
+	measure Clientes = DISTINCTCOUNT(Vendas[Customer ID])
+		formatString: #,0
+		displayFolder: Indicadores
+		lineageTag: 06cf6a22-d281-4bee-b9b8-2b24622ee841
+
+	measure 'Valores recuperados' = COALESCE(CALCULATE([Transacoes], KEEPFILTERS(Vendas[Status Valor] = "Recuperado: preco x quantidade")),0)
+		formatString: #,0
+		displayFolder: Qualidade
+		lineageTag: c2934ac3-dba4-4430-8972-9af3412939de
+
+	measure 'Vendas sem valor' = COALESCE(CALCULATE([Transacoes], KEEPFILTERS(Vendas[Status Valor] = "Sem valor recuperavel")),0)
+		formatString: #,0
+		displayFolder: Qualidade
+		lineageTag: 01cb9ea9-4c07-405c-bcdd-716a60c072be
+
+	measure 'Cobertura de valores' = DIVIDE([Transacoes com valor],[Transacoes])
+		formatString: 0.0%
+		displayFolder: Qualidade
+		lineageTag: 763eb61a-5ee2-4870-b557-b5efa267354e
+
+	measure 'Produtos nao informados' = COALESCE(CALCULATE([Transacoes], KEEPFILTERS(Vendas[Produto] = "Nao informado")),0)
+		formatString: #,0
+		displayFolder: Qualidade
+		lineageTag: 7e76c0dc-a7d9-4938-a0d6-8e2bbe9d9762
+
+	measure 'Descontos nao informados' = COALESCE(CALCULATE([Transacoes], KEEPFILTERS(Vendas[Desconto] = "Nao informado")),0)
+		formatString: #,0
+		displayFolder: Qualidade
+		lineageTag: 2ac642d0-cf89-4974-a134-9ccb479682b2
+
+	measure Divergencias = COALESCE(CALCULATE([Transacoes], KEEPFILTERS(Vendas[Divergencia] = "Divergente")),0)
+		formatString: #,0
+		displayFolder: Qualidade
+		lineageTag: 3a72d6bb-f59d-4271-aadc-bc9b3d098760
+
+	column 'Transaction ID'
+		dataType: string
+		lineageTag: 068fe5a0-80ee-404a-93a4-bfee22b79d49
+		summarizeBy: none
+		sourceColumn: Transaction ID
+
+	column 'Customer ID'
+		dataType: string
+		lineageTag: 546f2e01-34fb-4038-b232-85504ca1c3e0
+		summarizeBy: none
+		sourceColumn: Customer ID
+
+	column Category
+		dataType: string
+		isHidden
+		lineageTag: 6cff01aa-e351-4ff4-abce-c768e06dfd70
+		summarizeBy: none
+		sourceColumn: Category
+
+	column Item
+		dataType: string
+		isHidden
+		lineageTag: db8292bf-3b48-46b0-8904-fa29d1ee0057
+		summarizeBy: none
+		sourceColumn: Item
+
+	column 'Price Per Unit'
+		dataType: double
+		isHidden
+		lineageTag: ef22839e-3b7c-48d9-ad51-5b0cef773a56
+		summarizeBy: none
+		sourceColumn: Price Per Unit
+
+	column Quantity
+		dataType: double
+		isHidden
+		lineageTag: 66bd406f-9a3e-4e4c-baf7-810259ef850a
+		summarizeBy: none
+		sourceColumn: Quantity
+
+	column 'Total Spent'
+		dataType: double
+		isHidden
+		lineageTag: 45ca05f7-66cd-49aa-bb4d-0f2ed00ca5bf
+		summarizeBy: none
+		sourceColumn: Total Spent
+
+	column 'Payment Method'
+		dataType: string
+		isHidden
+		lineageTag: 37db8f74-c560-4b30-8658-85fc05b80c6b
+		summarizeBy: none
+		sourceColumn: Payment Method
+
+	column Location
+		dataType: string
+		isHidden
+		lineageTag: 9e915d25-0ccf-4cba-b714-a1970baa7bbc
+		summarizeBy: none
+		sourceColumn: Location
+
+	column 'Transaction Date'
+		dataType: dateTime
+		isHidden
+		formatString: dd/MM/yyyy
+		lineageTag: 817a5f29-244d-4eef-8fa9-9644c717c811
+		summarizeBy: none
+		sourceColumn: Transaction Date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Discount Applied'
+		dataType: string
+		isHidden
+		lineageTag: 1e18e976-ab98-43e1-9c8c-21d7305ae62a
+		summarizeBy: none
+		sourceColumn: Discount Applied
+
+	column 'Valor Venda'
+		dataType: double
+		lineageTag: 8160b16d-5f9f-4206-80ca-2af90ad9e75f
+		summarizeBy: none
+		sourceColumn: Valor Venda
+
+	column 'Quantidade Analise'
+		dataType: double
+		lineageTag: 493972ac-df4d-4b9b-ad05-c0a8adb8d328
+		summarizeBy: none
+		sourceColumn: Quantidade Analise
+
+	column Categoria
+		dataType: string
+		lineageTag: 00b980c4-f916-4c2a-86d2-8fdfc89b7a63
+		summarizeBy: none
+		sourceColumn: Categoria
+
+	column Canal
+		dataType: string
+		lineageTag: caece191-638b-4049-9446-964bbab51c05
+		summarizeBy: none
+		sourceColumn: Canal
+
+	column Pagamento
+		dataType: string
+		lineageTag: b14f7bb1-ddce-47e9-ab83-57779ece2894
+		summarizeBy: none
+		sourceColumn: Pagamento
+
+	column Produto
+		dataType: string
+		lineageTag: 98e4eedd-a312-49e3-bd35-9f4eb38a6d91
+		summarizeBy: none
+		sourceColumn: Produto
+
+	column Desconto
+		dataType: string
+		lineageTag: 48198ac3-bd8b-457c-a319-0f702430ae40
+		summarizeBy: none
+		sourceColumn: Desconto
+
+	column 'Status Valor'
+		dataType: string
+		lineageTag: 1f11ac44-6154-4542-92b8-0e81fcb2093d
+		summarizeBy: none
+		sourceColumn: Status Valor
+
+	column Divergencia
+		dataType: string
+		lineageTag: 60a80ba6-6b4f-4ac9-99bb-770af0a4bdb2
+		summarizeBy: none
+		sourceColumn: Divergencia
+
+	partition Vendas = m
+		mode: import
+		source =
+				let
+				    Fonte = Csv.Document(File.Contents(CaminhoCSV), [Delimiter=",", Columns=11, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Cabecalhos = Table.PromoteHeaders(Fonte, [PromoteAllScalars=true]),
+				    Limpos = Table.TransformColumns(Cabecalhos, List.Transform(Table.ColumnNames(Cabecalhos), (c) => {c, each if _ = null or Text.Trim(Text.From(_)) = "" then null else Text.Trim(Text.From(_)), type nullable text})),
+				    Tipos = Table.TransformColumnTypes(Limpos, {{"Price Per Unit", type number}, {"Quantity", type number}, {"Total Spent", type number}, {"Transaction Date", type date}}, "en-US"),
+				    Valor = Table.AddColumn(Tipos, "Valor Venda", each if [Total Spent] <> null then [Total Spent] else if [Price Per Unit] <> null and [Quantity] <> null then [Price Per Unit] * [Quantity] else null, type nullable number),
+				    Quantidade = Table.AddColumn(Valor, "Quantidade Analise", each if [Quantity] <> null then [Quantity] else if [Total Spent] <> null and [Price Per Unit] <> null and [Price Per Unit] > 0 then [Total Spent] / [Price Per Unit] else null, type nullable number),
+				    Categoria = Table.AddColumn(Quantidade, "Categoria", each Record.FieldOrDefault([Beverages="Bebidas", Butchers="Acougue", Food="Alimentos", Furniture="Moveis", Patisserie="Confeitaria", #"Milk Products"="Laticinios", #"Computers and electric accessories"="Informatica e acessorios", #"Electric household essentials"="Eletrodomesticos"], [Category], [Category]), type text),
+				    Canal = Table.AddColumn(Categoria, "Canal", each if [Location] = "Online" then "Online" else if [Location] = "In-store" then "Loja fisica" else [Location], type text),
+				    Pagamento = Table.AddColumn(Canal, "Pagamento", each if [Payment Method] = "Cash" then "Dinheiro" else if [Payment Method] = "Credit Card" then "Cartao de credito" else if [Payment Method] = "Digital Wallet" then "Carteira digital" else [Payment Method], type text),
+				    Produto = Table.AddColumn(Pagamento, "Produto", each if [Item] = null then "Nao informado" else [Item], type text),
+				    Desconto = Table.AddColumn(Produto, "Desconto", each if [Discount Applied] = null then "Nao informado" else if Text.Lower([Discount Applied]) = "true" then "Com desconto" else if Text.Lower([Discount Applied]) = "false" then "Sem desconto" else "Nao informado", type text),
+				    Status = Table.AddColumn(Desconto, "Status Valor", each if [Total Spent] <> null then "Original" else if [Valor Venda] <> null then "Recuperado: preco x quantidade" else "Sem valor recuperavel", type text),
+				    Divergencia = Table.AddColumn(Status, "Divergencia", each if [Total Spent] = null or [Price Per Unit] = null or [Quantity] = null then "Sem verificacao completa" else if Number.Abs([Total Spent] - [Price Per Unit] * [Quantity]) > 0.01 then "Divergente" else "Consistente", type text)
+				in
+				    Divergencia
+

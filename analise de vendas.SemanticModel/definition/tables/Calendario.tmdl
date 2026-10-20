@@ -1,0 +1,56 @@
+table Calendario
+	lineageTag: 61afbf69-8d7c-497f-9f7a-cf5c8f1dc572
+
+	column Data
+		dataType: dateTime
+		formatString: dd/MM/yyyy
+		lineageTag: edc0f684-f456-4ec6-8ad1-fc6c3ae4504a
+		summarizeBy: none
+		sourceColumn: Data
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Ano
+		dataType: int64
+		lineageTag: b65fd62b-006b-43ff-819e-5860860e061e
+		summarizeBy: none
+		sourceColumn: Ano
+
+	column 'Mês Numero'
+		dataType: int64
+		isHidden
+		lineageTag: 0d074195-564f-4d9d-8859-4541b695b081
+		summarizeBy: none
+		sourceColumn: Mês Numero
+
+	column mês
+		dataType: string
+		lineageTag: 9ea894d6-ed29-4a51-bbe9-82b2e74fdfc0
+		summarizeBy: none
+		sourceColumn: mês
+		sortByColumn: 'Mês Numero'
+
+	column 'Ano Mês'
+		dataType: string
+		lineageTag: fb22d924-d0f1-4229-87b7-687b80d37ad2
+		summarizeBy: none
+		sourceColumn: Ano Mês
+
+	partition Calendario = m
+		mode: import
+		source =
+				let
+				    Fonte = Csv.Document(File.Contents(CaminhoCSV), [Delimiter=",", Columns=11, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Cabecalhos = Table.PromoteHeaders(Fonte, [PromoteAllScalars=true]),
+				    Datas = List.Transform(Table.Column(Cabecalhos, "Transaction Date"), each Date.FromText(_, [Format="yyyy-MM-dd", Culture="en-US"])),
+				    Inicio = Date.StartOfYear(List.Min(Datas)),
+				    Fim = Date.EndOfYear(List.Max(Datas)),
+				    Lista = Table.FromColumns({List.Dates(Inicio, Duration.Days(Fim-Inicio)+1, #duration(1,0,0,0))}, {"Data"}),
+				    Tipo = Table.TransformColumnTypes(Lista, {{"Data", type date}}),
+				    Ano = Table.AddColumn(Tipo, "Ano", each Date.Year([Data]), Int64.Type),
+				    MesNumero = Table.AddColumn(Ano, "Mes Numero", each Date.Month([Data]), Int64.Type),
+				    Mes = Table.AddColumn(MesNumero, "Mes", each Date.ToText([Data], "MMM", "pt-BR"), type text),
+				    AnoMes = Table.AddColumn(Mes, "Ano Mes", each Date.ToText([Data], "yyyy-MM", "pt-BR"), type text),
+				    #"Colunas Renomeadas" = Table.RenameColumns(AnoMes,{{"Mes Numero", "Mês Numero"}, {"Mes", "mês"}, {"Ano Mes", "Ano Mês"}})
+				in #"Colunas Renomeadas"
+

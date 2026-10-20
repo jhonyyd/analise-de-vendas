@@ -1,0 +1,33 @@
+{
+  "name": "Retail | Azul e Turquesa",
+  "dataColors": [
+    "#147D92",
+    "#275DAD",
+    "#36A99B",
+    "#E5AA43",
+    "#7C6BB1",
+    "#597484",
+    "#CB6E51",
+    "#5E9489"
+  ],
+  "background": "#F3F6FA",
+  "foreground": "#15283F",
+  "tableAccent": "#147D92",
+  "textClasses": {
+    "title": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 13,
+      "color": "#15283F"
+    },
+    "label": {
+      "fontFace": "Segoe UI",
+      "fontSize": 10,
+      "color": "#506176"
+    },
+    "callout": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 30,
+      "color": "#15283F"
+    }
+  }
+}

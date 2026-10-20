@@ -1,0 +1,5 @@
+expression CaminhoCSV = "D:\projeto\Retail_Vendas_PowerBI\dados\retail_store_sales.csv" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 0a16bc97-6016-434e-a7fd-081567eb7dda
+
+	annotation PBI_ResultType = Text
+
